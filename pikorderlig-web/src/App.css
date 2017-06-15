@@ -29,6 +29,10 @@ button.ctrl-button {
 	padding: 6px;
 	margin: 20px 6px;
 	font-size: 16px;
+	border: none;
+	background-color: #115c63;
+	color: #fff;
+	outline: none;
 }
 
 button img {
