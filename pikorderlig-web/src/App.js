@@ -9,10 +9,34 @@ class App extends Component {
 
 	constructor(props) {
 		super(props);
-		this.baseUrl = `${document.location.protocol}//${document.location.hostname}:${REST_PORT}`;
+
+		this.baseUrl = this._getBaseUrl();
+
 		this.state = {
 			isRecording: false,
 		};
+
+		this._getRecordingStatusFromRemote()
+	}
+
+	_getBaseUrl() {
+		let hostname = document.location.hostname;
+		if (hostname.toLowerCase() === 'localhost') {
+			hostname = 'pikorderlig'
+		}
+		return `${document.location.protocol}//${hostname}:${REST_PORT}`;
+	}
+
+	_getRecordingStatusFromRemote() {
+		const url = this.baseUrl + '/recording/status';
+		$.ajax(url, {
+			method: 'GET',
+			success: response => {
+				this.setState({
+					isRecording: response.recording,
+				})
+			}
+		})
 	}
 
     startRecording() {
