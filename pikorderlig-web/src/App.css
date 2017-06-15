@@ -35,6 +35,11 @@ button.ctrl-button {
 	outline: none;
 }
 
+button.ctrl-button:disabled {
+	background-color: #458086;
+	color: #c0c0c0;;
+}
+
 button img {
 	position: relative;
 	top: 3px;
