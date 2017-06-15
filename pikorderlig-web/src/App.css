@@ -28,4 +28,11 @@ button.ctrl-button {
 	width: calc(100% - 12px);
 	padding: 6px;
 	margin: 20px 6px;
+	font-size: 16px;
+}
+
+button img {
+	position: relative;
+	top: 3px;
+	margin-right: 6px;
 }
