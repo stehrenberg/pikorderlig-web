@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import ControlButton from './components/ControlButton';
+import RecordingInfo from './components/RecordingInfo'
 import './App.css';
 import $ from 'jquery';
+import moment from 'moment';
 
 const REST_PORT = '8080';
+const recordingTimeMock = {format: () => {}};
 
 class App extends Component {
 
@@ -11,9 +14,11 @@ class App extends Component {
 		super(props);
 
 		this.baseUrl = this._getBaseUrl();
+		this.clockTickInterval = null;
 
 		this.state = {
 			isRecording: false,
+			recordingTime: recordingTimeMock,
 		};
 
 		this._getRecordingStatusFromRemote()
@@ -31,20 +36,54 @@ class App extends Component {
 		const url = this.baseUrl + '/recording/status';
 		$.ajax(url, {
 			method: 'GET',
-			success: response => {
-				this.setState({
-					isRecording: response.recording,
-				})
-			}
+			success: response => this._parseRecordingStatus(response)
 		})
+	}
+
+	_parseRecordingStatus(recording_status) {
+		let recordingTime;
+
+		const hasRecordingStart = recording_status.recording_start !== null;
+
+		if (!hasRecordingStart) {
+			recordingTime = recordingTimeMock;
+		} else {
+			const recording_start = parseInt(recording_status.recording_start * 1000);
+			recordingTime = moment().subtract(recording_start).subtract(1, 'h');
+		}
+
+		this.setState({
+			isRecording: recording_status.recording,
+			recordingTime: recordingTime,
+		}, () => {
+			if (hasRecordingStart) {
+				this._startClockTick();
+			}
+		});
+
+	}
+
+	_startClockTick() {
+		this.clockTickInterval = window.setInterval(() => {
+			const currentRecordingTime = this.state.recordingTime;
+			currentRecordingTime.add(1, 's');
+			this.setState({
+				recordingTime: currentRecordingTime
+			})
+		}, 1000);
+	}
+
+	_stopClockTick() {
+		window.clearInterval(this.clockTickInterval);
 	}
 
     startRecording() {
 		const url = this.baseUrl + '/recording/start';
 		$.ajax(url, {
 			method: 'GET',
-			success: () => {
+			success: response => {
 				this.setState({isRecording: true});
+				this._parseRecordingStatus(response)
 			}
 		});
     }
@@ -54,7 +93,12 @@ class App extends Component {
 		$.ajax(url, {
 			method: 'GET',
 			success: () => {
-				this.setState({isRecording: false});
+				this.setState({
+					isRecording: false,
+					recordingTime: recordingTimeMock,
+				});
+
+				this._stopClockTick();
 			}
 		});
     }
@@ -77,6 +121,7 @@ class App extends Component {
 					symbol="/img/media-playback-stop.svg"
 					onClick={ this.stopRecording.bind(this) }
 				/>
+				<RecordingInfo recordingTime={this.state.recordingTime} />
             </div>
         );
     }

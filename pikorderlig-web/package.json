@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "jquery": "^3.2.1",
+    "moment": "^2.18.1",
     "react-scripts": "1.0.7",
     "scp": "0.0.3"
   },
